@@ -6,6 +6,22 @@ import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 import { EOL } from "os";
 
+/**
+ * @typedef {Object} Options
+ * @property {string|null} transparentType
+ * @property {string|null} stage
+ * @property {string|null} v2rayaConfdir
+ */
+
+/**
+ * @typedef {Object} CustomConfig
+ * @property {string[]|null} bypass_users
+ * @property {string[]|null} fake_dns_exclude_domains
+ */
+
+/**
+ * @enum {string}
+ */
 const Stage = {
     PreStart: "pre-start",
     PreStop: "pre-stop",
@@ -13,6 +29,11 @@ const Stage = {
     PostStop: "post-stop",
 };
 
+/**
+ *
+ * @param {string} filepath
+ * @returns {Object}
+ */
 function readJSONFile(filepath) {
     try {
         const data = readFileSync(filepath, "utf8");
@@ -23,6 +44,11 @@ function readJSONFile(filepath) {
     }
 }
 
+/**
+ *
+ * @param {string} filepath
+ * @param {Object} data
+ */
 function writeJSONFile(filepath, data) {
     try {
         const newData = JSON.stringify(data, null, 2) + EOL;
@@ -33,6 +59,11 @@ function writeJSONFile(filepath, data) {
     }
 }
 
+/**
+ *
+ * @param {string} command
+ * @returns {string}
+ */
 function executeCommand(command) {
     try {
         return execSync(command, {
@@ -44,6 +75,11 @@ function executeCommand(command) {
     }
 }
 
+/**
+ *
+ * @param {Options} options
+ * @param {CustomConfig} customConfig
+ */
 function handleCore(options, customConfig) {
     const { stage, v2rayaConfdir } = options;
 
@@ -83,6 +119,11 @@ function handleCore(options, customConfig) {
     }
 }
 
+/**
+ *
+ * @param {Options} options
+ * @param {CustomConfig} customConfig
+ */
 function handleTransparent(options, customConfig) {
     const { stage } = options;
 
@@ -92,15 +133,9 @@ function handleTransparent(options, customConfig) {
 
             if (/v2raya/.test(nftTables)) {
                 executeCommand(
-                    `nft insert rule inet v2raya tp_rule meta skuid {${customConfig.bypass_users.join(", ")}} return`
-                );
-
-                const commonPorts = customConfig.common_ports.join(", ");
-                executeCommand(
-                    `nft insert rule inet v2raya tp_rule tcp dport != {${commonPorts}} return`
-                );
-                executeCommand(
-                    `nft insert rule inet v2raya tp_rule udp dport != {${commonPorts}} return`
+                    `nft insert rule inet v2raya tp_rule meta skuid {${customConfig.bypass_users.join(
+                        ", "
+                    )}} return`
                 );
             }
             console.log(`v2rayA transparent hook ${stage} finished`);
@@ -111,6 +146,10 @@ function handleTransparent(options, customConfig) {
     }
 }
 
+/**
+ * @param {string[]} argv
+ * @returns {Options}
+ */
 function parseArgument(argv) {
     let transparentType = null;
     let stage = null;
