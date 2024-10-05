@@ -17,6 +17,7 @@ import { EOL } from "os";
  * @typedef {Object} CustomConfig
  * @property {string[]|null} bypass_users
  * @property {string[]|null} fake_dns_exclude_domains
+ * @property {number[]|null} common_ports
  */
 
 /**
@@ -136,6 +137,14 @@ function handleTransparent(options, customConfig) {
                     `nft insert rule inet v2raya tp_rule meta skuid {${customConfig.bypass_users.join(
                         ", "
                     )}} return`
+                );
+
+                const commonPorts = customConfig.common_ports.join(", ");
+                executeCommand(
+                    `nft insert rule inet v2raya tp_rule tcp dport != {${commonPorts}} return`
+                );
+                executeCommand(
+                    `nft insert rule inet v2raya tp_rule udp dport != {${commonPorts}} return`
                 );
             }
             console.log(`v2rayA transparent hook ${stage} finished`);
