@@ -190,6 +190,11 @@ function parseArgument(argv) {
 }
 
 function main() {
+    if (process.getuid() !== 0) {
+        console.error("The script must be run as root!");
+        process.exit(1);
+    }
+
     const scriptName = basename(fileURLToPath(import.meta.url));
 
     const options = parseArgument(process.argv);
